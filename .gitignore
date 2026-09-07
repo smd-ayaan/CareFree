@@ -1,5 +1,11 @@
-access_system.db
-
-venv/
-arduino_firmware/
+# Python cache
 __pycache__/
+
+# Arduino firmware
+arduino_firmware/
+
+# Virtual environment
+venv/
+
+# Database
+access_system.db
