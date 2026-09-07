@@ -2,4 +2,4 @@ access_system.db
 
 venv/
 arduino_firmware/
-_pycache_/
+__pycache__/
