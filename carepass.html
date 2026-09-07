@@ -914,6 +914,59 @@
     show('welcome');
   }
 
+
+  let scanTimer = null;
+  function startScan(mode){
+    show('scan');
+    const fill = document.getElementById('scanFill');
+    const status = document.getElementById('scanStatus');
+    fill.style.width = '0%';
+
+    const liveFeed = document.getElementById('liveFeed');
+    liveFeed.src = '/video_feed?t=' + Date.now(); // Starts streaming the webcam live
+    
+    const messages = ['Positioning…','Capturing photo…','Matching face…'];
+    let i = 0;
+    status.textContent = messages[0];
+    clearInterval(scanTimer);
+    scanTimer = setInterval(() => {
+      i++;
+      if(i < messages.length){ status.textContent = messages[i]; }
+    }, 480);
+
+    requestAnimationFrame(() => { fill.style.width = '100%'; });
+
+    // DELAY THE BACKEND SCAN BY 1.8 SECONDS TO LET YOUR FACE SHOW FIRST
+    setTimeout(() => {
+      fetch('/api/scan', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          clearInterval(scanTimer);
+          fill.style.width = '100%';
+          liveFeed.src = ''; // stop streaming once we have a result
+
+          if (!data.success) {
+            status.textContent = data.error || 'Scan failed — try again';
+            return;
+          }
+
+          if (data.recognized) {
+            document.getElementById('returningName').textContent = data.name;
+            document.getElementById('returningScore').textContent = 'Match score · ' + data.score;
+            show('resultReturning');
+          } else {
+            show('resultFirst');
+          }
+        })
+        .catch(err => {
+          clearInterval(scanTimer);
+          liveFeed.src = '';
+          status.textContent = 'Could not reach backend';
+          console.error(err);
+        });
+    }, 3000); // 1800 milliseconds = 1.8 seconds delay
+  }
+/*
   let scanTimer = null;
   function startScan(mode){
     show('scan');
@@ -961,6 +1014,7 @@
         console.error(err);
       });
   }
+  */
 
   function confirmSaved(){
     const btns = document.querySelectorAll('.confirm-btn');
